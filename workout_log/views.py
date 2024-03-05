@@ -20,6 +20,11 @@ def index(request):
     # Everyone else is prompted to sign in
     else:
         return HttpResponseRedirect(reverse("login"))
+    
+# Add functionality to create a workout
+    
+def create_workout(request):
+    pass
 
 # Add user login, logout, and registration functionality
 
