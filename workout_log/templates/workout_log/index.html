@@ -1,0 +1,19 @@
+{% extends "workout_log/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+    <h2>{{ request.user }}</h2>
+
+    <button class="btn btn-sm btn-outline-primary" id="log">Log Workout</button>
+    <button class="btn btn-sm btn-outline-primary" id="plan">Training Plan</button>
+    <button class="btn btn-sm btn-outline-primary" id="history">History</button>
+    <button class="btn btn-sm btn-outline-primary" id="library">Exercise Library</button>
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'logout' %}">Log Out</a>
+    <hr>
+    
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}
