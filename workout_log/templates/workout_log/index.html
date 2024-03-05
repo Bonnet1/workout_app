@@ -3,14 +3,13 @@
 
 {% block body %}
 
-    <h2>{{ request.user }}</h2>
+    <h2>Hello, World!</h2>
 
-    <button class="btn btn-sm btn-outline-primary" id="log">Log Workout</button>
-    <button class="btn btn-sm btn-outline-primary" id="plan">Training Plan</button>
-    <button class="btn btn-sm btn-outline-primary" id="history">History</button>
-    <button class="btn btn-sm btn-outline-primary" id="library">Exercise Library</button>
-    <a class="btn btn-sm btn-outline-primary" href="{% url 'logout' %}">Log Out</a>
-    <hr>
+    {% for workout in workouts %}
+        <p>
+            {{ workout.status }} as of {{ workout.modified_at}}
+        </p>
+    {% endfor %}
     
 {% endblock %}
 

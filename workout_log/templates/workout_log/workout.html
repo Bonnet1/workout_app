@@ -1,0 +1,42 @@
+{% extends "workout_log/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+    {%  if message %}
+        {{ message }}
+    {% endif %}
+
+    <h2>Create a new workout</h2>
+
+    <div id="workout">
+        <form action="{% url 'workout' %}" method="post">
+            {% csrf_token %}
+            <label for="exercise">Exercise:</label>
+            <select id="exercise" name="exercise">
+                {% for exercise in exercises %}
+                    <option value="{{ exercise.id }}">{{ exercise.name }}</option>
+                {% endfor %}
+            </select>
+            {{ exercise_detail_form }}
+            <input type="submit">
+        </form>
+    </div>
+
+    <div id="exercises">
+        <div id="add_exercise">
+            <h3>Add New Exercise:</h3>
+            <form action="{% url 'add_exercise' %}" method="post">
+                {% csrf_token %}
+                {{ exercise_form }}
+                <input type="submit">
+            </form>
+        </div>
+
+    </div>
+    
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}

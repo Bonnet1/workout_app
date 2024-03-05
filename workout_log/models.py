@@ -15,19 +15,12 @@ class Workout(models.Model):
     )
 
     user = models.ForeignKey("User", on_delete=models.CASCADE, related_name="workouts")
-    created_at = models.DateTimeField(editable=False)
-    modified_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
     status = models.CharField(default=STATUSES[0][0], max_length=16, choices=STATUSES)
 
     def __str__(self):
         return f"{self.user}: {self.status} at {self.modified_at}"
-
-    def save(self, *args, **kwargs):
-        ''' On save, update timestamps '''
-        if not self.id:
-            self.created = timezone.now()
-        self.modified_at = timezone.now()
-        return super(User, self).save(*args, **kwargs)
     
 class Exercise(models.Model):
     BODY_PARTS = (
