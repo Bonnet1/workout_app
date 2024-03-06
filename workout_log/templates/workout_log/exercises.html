@@ -1,0 +1,36 @@
+{% extends "workout_log/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+    {%  if message %}
+        {{ message }}
+    {% endif %}
+
+    <h2>Available Exercises</h2>
+
+    {% for exercise in exercises %}
+        <div>
+            <a href="{{ exercise.video_url }}">{{ exercise.name }}</a>
+            {{ exercise.body_part }}
+            {{ exercise.equipment }}
+        </div>
+    {% endfor %}
+
+    <div id="exercises">
+        <div id="add_exercise">
+            <h3>Add New Exercise:</h3>
+            <form action="{% url 'add_exercise' %}" method="post">
+                {% csrf_token %}
+                {{ exercise_form }}
+                <input type="submit">
+            </form>
+        </div>
+
+    </div>
+
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}

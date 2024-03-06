@@ -66,9 +66,9 @@ class WorkoutExercise(models.Model):
 
 class WorkoutExerciseDetail(models.Model):
     workout_exercise = models.ForeignKey("WorkoutExercise", on_delete=models.CASCADE, related_name="workout_exercise_details")
-    reps = models.PositiveIntegerField()
-    sets = models.PositiveIntegerField()
-    weight = models.PositiveIntegerField()
+    reps = models.PositiveIntegerField(default=0)
+    sets = models.PositiveIntegerField(default=0)
+    weight = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"{self.workout_exercise}: {self.sets} sets at {self.reps} at {self.weight} lbs."

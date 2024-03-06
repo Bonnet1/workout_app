@@ -12,10 +12,10 @@
     <body>
         <h2>{{ request.user }}</h2>
 
-        <a class="btn btn-sm btn-outline-primary" href="{% url 'workout' %}">Create Workout</a>
-        <button class="btn btn-sm btn-outline-primary" id="plan">Training Plan</button>
-        <a class="btn btn-sm btn-outline-primary" href="{% url 'index' %}">History</a>
-        <button class="btn btn-sm btn-outline-primary" id="library">Exercise Library</button>
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'index' %}">Workout List</a>
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'add' %}">New Workout</a>
+        <!-- <button class="btn btn-sm btn-outline-primary" id="plan">Training Plan</button> -->
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'exercises' %}">Exercise Library</a>
         <a class="btn btn-sm btn-outline-primary" href="{% url 'logout' %}">Log Out</a>
         <hr>
 

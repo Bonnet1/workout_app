@@ -9,6 +9,7 @@ urlpatterns = [
     path("register", views.register, name="register"),
 
     # Add interactive functionality
-    path("workout", views.workout, name="workout"),
-    path("add_exercise", views.add_exercise, name="add_exercise")
+    path("exercises", views.exercises, name="exercises"),
+    path("add_exercise", views.add_exercise, name="add_exercise"),
+    path("add", views.add, name="add")
 ]

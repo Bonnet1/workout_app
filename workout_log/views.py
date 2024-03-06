@@ -6,6 +6,7 @@ from django.db import IntegrityError
 from django.http import JsonResponse
 from django.shortcuts import HttpResponse, HttpResponseRedirect, render
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import User, Workout, Exercise, WorkoutExercise, WorkoutExerciseDetail
 
@@ -29,6 +30,11 @@ def index(request):
 
         # Display historic workouts
         workouts = Workout.objects.filter(user=request.user)
+
+        # TODO - Create JSON object containing all exercises and exercise details for every workout
+
+        # TODO - Change status of workout from index page
+
         return render(request, "workout_log/index.html", {
             "workouts": workouts
         })
@@ -52,54 +58,67 @@ def add_exercise(request):
             new_exercise = form.save(commit=False)
             new_exercise.user = request.user
             new_exercise.save()
-            return HttpResponseRedirect(reverse("workout"))
-        return HttpResponseRedirect(reverse("workout"), {
+            return HttpResponseRedirect(reverse("exercises"))
+        return HttpResponseRedirect(reverse("exercises"), {
             "message": "Invalid Form"
         })
 
-def workout(request):
+def exercises(request):
+      
+    available_exercises = Exercise.objects.all().order_by('name')
 
-    ## TODO: Explore using formset factory to alllow dynamic exercises to be added
+    return render(request, "workout_log/exercises.html", {
+        "exercises": available_exercises,
+        "exercise_form": NewExerciseForm(),
+    })
+
+@csrf_exempt
+def add(request):
 
     # Check if method is POST
     if request.method == "POST":
+        data = json.loads(request.body)
+        if len(data) > 0:
 
-        # Capture new workout data from form
-        form = (request.POST)
+            # TODO - check to make sure all exercises have reps, sets, and weights added
+            # TODO - add persistance to this page so workout is not lost when adding more exercises
 
-        # Create a new workout
-        new_workout = Workout(
-            user = request.user
-        )
-        new_workout.save()
+            # Create a new workout
+            new_workout = Workout(
+                user = request.user,
+                status = "Started",
+
+            )
+            new_workout.save()
+
+            # Add all relevant exercises to the workout
+            for exercise in data:
+                new_workout_exercise = WorkoutExercise(
+                    exercise = Exercise.objects.get(name=exercise['exercise']),
+                    workout = Workout.objects.get(pk=new_workout.id)
+                    )
+                new_workout_exercise.save()
+
+                new_exercise_detail = WorkoutExerciseDetail(
+                    workout_exercise = WorkoutExercise.objects.get(pk=new_workout_exercise.id),
+                    reps = exercise['reps'],
+                    sets = exercise['sets'],
+                    weight = exercise['weight']
+                )
+                new_exercise_detail.save()
+                return JsonResponse(data, safe=False)
+        else:
+            return JsonResponse({
+            "error": "No exercises submitted."
+        }, status=400)
         
-        # Create all relevant exercises TODO - add multi exercise functionality
-        new_workout_exercise = WorkoutExercise(
-            exercise = Exercise.objects.get(pk=form['exercise']),
-            workout = Workout.objects.get(pk=new_workout.id)
-        )
-        new_workout_exercise.save()
+    
+    if request.method == "GET":
+        available_exercises = Exercise.objects.all().order_by('name')
 
-        # Create relevanet exercise details TODO -- add multi log functionality
-        exercise_detail_form = NewWorkoutExerciseForm(request.POST)
-        if exercise_detail_form.is_valid():
-            new_exercise_detail = exercise_detail_form.save(commit=False)
-            new_exercise_detail.workout_exercise = WorkoutExercise.objects.get(pk=new_workout_exercise.id)
-            new_exercise_detail.save()
-
-        return HttpResponseRedirect(reverse("workout"))
-       
-    available_exercises = Exercise.objects.all().order_by('name')
-
-    return render(request, "workout_log/workout.html", {
-        "exercises": available_exercises,
-        "exercise_form": NewExerciseForm(),
-        "exercise_detail_form": NewWorkoutExerciseForm()
-    })
-
-
-
-
+        return render(request, "workout_log/workout.html", {
+            "exercises": available_exercises
+        })
 
 
 # Add user login, logout, and registration functionality
@@ -108,9 +127,9 @@ def login_view(request):
     if request.method == "POST":
 
         # Attempt to sign user in
-        email = request.POST["email"]
+        username = request.POST["username"]
         password = request.POST["password"]
-        user = authenticate(request, username=email, password=password)
+        user = authenticate(request, username=username, password=password)
 
         # Check if authentication successful
         if user is not None:
@@ -118,7 +137,7 @@ def login_view(request):
             return HttpResponseRedirect(reverse("index"))
         else:
             return render(request, "workout_log/login.html", {
-                "message": "Invalid email and/or password."
+                "message": "Invalid username and/or password."
             })
     else:
         return render(request, "workout_log/login.html")
