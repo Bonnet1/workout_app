@@ -11,5 +11,6 @@ urlpatterns = [
     # Add interactive functionality
     path("exercises", views.exercises, name="exercises"),
     path("add_exercise", views.add_exercise, name="add_exercise"),
-    path("add", views.add, name="add")
+    path("add", views.add, name="add"),
+    path("update/<int:workout_id>", views.update, name="update")
 ]

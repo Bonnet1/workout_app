@@ -5,14 +5,45 @@
 
     <h2>Workout Log</h2>
 
-    {% for workout in workouts %}
-        <p>
-            {{ workout.status }} as of {{ workout.modified_at}}
-        </p>
+    {% if workout_list|length == 0 %}
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'add' %}">Add a workout here</a>
+    {% endif %}
+
+    {% for w in workout_list %}
+
+        <div class="card w-75">
+            <div class="card-body">
+
+                {% if w.status == "Template" %}
+                    <button class="btn btn-sm btn-outline-primary" data-workout="{{ w.id }}" data-status="{{ w.status }}">Start Workout</button>
+                {% elif w.status == "Started" %}
+                    <button class="btn btn-sm btn-outline-primary" data-workout="{{ w.id }}" data-status="{{ w.status }}">Finish Workout</button>
+                {% else %}
+                    {{ w.status }}
+                {% endif %}
+                </p>
+                <ul>
+                    {% for e in w.exercises %}
+                        <div class="exercise-check">
+                            {% if w.status == "Finished" %}
+                                <input type="checkbox" id="exercise" name="{{ e.name }}" checked disabled/>
+                            {% elif w.status == "Started" %}
+                                <input type="checkbox" id="exercise" name="{{ e.name }}" />
+                            {% else %}
+                                <input type="checkbox" id="exercise" name="{{ e.name }}" disabled/>
+                            {% endif %}
+                            {{ e.name }} for {{ e.sets.0 }} sets of {{ e.reps.0 }} reps at {{ e.weight.0 }}lbs.
+                        </div>
+                    {% endfor %}
+                </ul>
+            </div>
+
+        </div>
+        
     {% endfor %}
     
 {% endblock %}
 
 {% block script %}
-
+    <script src="static/workout_log/index.js"></script>
 {% endblock %}

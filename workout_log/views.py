@@ -29,14 +29,40 @@ def index(request):
     if request.user.is_authenticated:
 
         # Display historic workouts
-        workouts = Workout.objects.filter(user=request.user)
+        workouts = Workout.objects.filter(user=request.user).order_by('-modified_at')
 
         # TODO - Create JSON object containing all exercises and exercise details for every workout
+
+        workout_list = []
+
+        for w in workouts:
+            status = w.status
+            exercises = WorkoutExercise.objects.filter(workout=w.id)
+            exercise_list = []
+            for e in exercises:
+                exercise = Exercise.objects.get(id=e.exercise.id)
+                exerciseDetail = WorkoutExerciseDetail.objects.get(workout_exercise=e.id)
+                reps = exerciseDetail.reps,
+                sets = exerciseDetail.sets,
+                weight = exerciseDetail.weight,
+                exercise_list.append( {
+                    "name": exercise.name,
+                    "reps": reps,
+                    "sets": sets,
+                    "weight": weight
+                })
+            workout = {
+                "id": w.id,
+                "status": status,
+                "exercises": exercise_list
+            }
+            workout_list.append(workout)
 
         # TODO - Change status of workout from index page
 
         return render(request, "workout_log/index.html", {
-            "workouts": workouts
+            "workouts": workouts,
+            "workout_list": workout_list
         })
 
     # Everyone else is prompted to sign in
@@ -80,8 +106,13 @@ def add(request):
         data = json.loads(request.body)
         if len(data) > 0:
 
-            # TODO - check to make sure all exercises have reps, sets, and weights added
             # TODO - add persistance to this page so workout is not lost when adding more exercises
+
+            for exercise in data:
+                if (exercise['reps'] == 0) | (exercise['sets'] == 0) | (exercise['weight'] == 0):
+                    return JsonResponse({
+                            "error": "Must complete all sets, reps, and weights."
+                            }, status=400) 
 
             # Create a new workout
             new_workout = Workout(
@@ -106,20 +137,36 @@ def add(request):
                     weight = exercise['weight']
                 )
                 new_exercise_detail.save()
-                return JsonResponse(data, safe=False)
+            return JsonResponse(data, safe=False)
         else:
             return JsonResponse({
             "error": "No exercises submitted."
-        }, status=400)
+            }, status=400)
         
     
     if request.method == "GET":
+
         available_exercises = Exercise.objects.all().order_by('name')
 
         return render(request, "workout_log/workout.html", {
             "exercises": available_exercises
         })
 
+@csrf_exempt
+def update(request, workout_id):
+    try:
+        workout = Workout.objects.get(pk=workout_id)
+    except:
+        return JsonResponse({"error": "Workout not found."}, status=404)
+    
+    if request.user != workout.user:
+        return JsonResponse({"error": "Must be the original creator."}, status=400)
+
+    if request.method == "PUT":
+        data = json.loads(request.body)
+        workout.status = data["status"]
+        workout.save()
+        return HttpResponse(data["status"], status=204)
 
 # Add user login, logout, and registration functionality
 

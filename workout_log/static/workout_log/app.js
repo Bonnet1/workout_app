@@ -69,7 +69,13 @@ document.addEventListener('DOMContentLoaded', function() {
 })
 
 function add_workout() {
-    // TODO -- Add check to ensure that all execises include reps, sets, and weight
+
+    for (e in exerciseList) {
+        if ((isEmpty(exerciseList[e]['reps']) || isEmpty(exerciseList[e]['sets']) || isEmpty(exerciseList[e]['weight'])) ) {
+            window.alert("Must complete all reps, sets, and weights")
+            return
+        }
+    }
     
     fetch('/add', {
         method: 'POST',
@@ -80,4 +86,12 @@ function add_workout() {
     .catch(error => {
         console.log('Error', error);
     });
+    exerciseOrder = 0;
+    exerciseList = [];
+    let list = document.querySelector('#selected_exercises');
+    list.innerHTML = '';
+}
+
+function isEmpty(val){
+    return (val === undefined || val == null || val.length <= 0) ? true : false;
 }
