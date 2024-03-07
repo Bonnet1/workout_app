@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleStatus(this.dataset.workout, this.dataset.status)
             button.style.color = toggleColor(this.dataset.status)
         }
+        
     })
 });
 

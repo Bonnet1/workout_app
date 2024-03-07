@@ -70,24 +70,30 @@ def index(request):
         return HttpResponseRedirect(reverse("login"))
     
 # Add functionality to create and log a workout
-    
+
 def add_exercise(request):
+
+    # Check for user authentication first
+    if request.user.is_authenticated:
     
-    # Check if method is POST
-    if request.method == "POST":
+        # Check if method is POST
+        if request.method == "POST":
 
-        # Capture new exercise data from form
-        form = NewExerciseForm(request.POST)
+            # Capture new exercise data from form
+            form = NewExerciseForm(request.POST)
 
-        # Check if form data is valid (server-side)
-        if form.is_valid():
-            new_exercise = form.save(commit=False)
-            new_exercise.user = request.user
-            new_exercise.save()
-            return HttpResponseRedirect(reverse("exercises"))
-        return HttpResponseRedirect(reverse("exercises"), {
-            "message": "Invalid Form"
-        })
+            # Check if form data is valid (server-side)
+            if form.is_valid():
+                new_exercise = form.save(commit=False)
+                new_exercise.user = request.user
+                new_exercise.save()
+                return HttpResponseRedirect(reverse("exercises"))
+            return HttpResponseRedirect(reverse("exercises"), {
+                "message": "Invalid Form"
+            })
+    # Everyone else is prompted to sign in
+    else:
+        return HttpResponseRedirect(reverse("login"))
 
 def exercises(request):
       
@@ -100,57 +106,66 @@ def exercises(request):
 
 @csrf_exempt
 def add(request):
+    # Check for user authentication first
+    if request.user.is_authenticated:
+    
+        # Check if method is POST
+        if request.method == "POST":
+        
+            data = json.loads(request.body)
+            if len(data) > 0:
 
-    # Check if method is POST
-    if request.method == "POST":
-        data = json.loads(request.body)
-        if len(data) > 0:
+                # TODO - add persistance to this page so workout is not lost when adding more exercises
 
-            # TODO - add persistance to this page so workout is not lost when adding more exercises
+                for exercise in data:
+                    if (exercise['reps'] == 0) | (exercise['sets'] == 0) | (exercise['weight'] == 0):
+                        return JsonResponse({
+                                "error": "Must complete all sets, reps, and weights."
+                                }, status=400) 
 
-            for exercise in data:
-                if (exercise['reps'] == 0) | (exercise['sets'] == 0) | (exercise['weight'] == 0):
-                    return JsonResponse({
-                            "error": "Must complete all sets, reps, and weights."
-                            }, status=400) 
+                # Create a new workout
+                new_workout = Workout(
+                    user = request.user,
+                    status = "Template",
 
-            # Create a new workout
-            new_workout = Workout(
-                user = request.user,
-                status = "Started",
-
-            )
-            new_workout.save()
-
-            # Add all relevant exercises to the workout
-            for exercise in data:
-                new_workout_exercise = WorkoutExercise(
-                    exercise = Exercise.objects.get(name=exercise['exercise']),
-                    workout = Workout.objects.get(pk=new_workout.id)
-                    )
-                new_workout_exercise.save()
-
-                new_exercise_detail = WorkoutExerciseDetail(
-                    workout_exercise = WorkoutExercise.objects.get(pk=new_workout_exercise.id),
-                    reps = exercise['reps'],
-                    sets = exercise['sets'],
-                    weight = exercise['weight']
                 )
-                new_exercise_detail.save()
-            return JsonResponse(data, safe=False)
-        else:
-            return JsonResponse({
-            "error": "No exercises submitted."
-            }, status=400)
+                new_workout.save()
+
+                # Add all relevant exercises to the workout
+                for exercise in data:
+                    new_workout_exercise = WorkoutExercise(
+                        exercise = Exercise.objects.get(name=exercise['exercise']),
+                        workout = Workout.objects.get(pk=new_workout.id)
+                        )
+                    new_workout_exercise.save()
+
+                    new_exercise_detail = WorkoutExerciseDetail(
+                        workout_exercise = WorkoutExercise.objects.get(pk=new_workout_exercise.id),
+                        reps = exercise['reps'],
+                        sets = exercise['sets'],
+                        weight = exercise['weight']
+                    )
+                    new_exercise_detail.save()
+                return JsonResponse(data, safe=False)
+            else:
+                return JsonResponse({
+                "error": "No exercises submitted."
+                }, status=400)      
+        
+        
         
     
-    if request.method == "GET":
+        if request.method == "GET":
 
-        available_exercises = Exercise.objects.all().order_by('name')
+            available_exercises = Exercise.objects.all().order_by('name')
 
-        return render(request, "workout_log/workout.html", {
-            "exercises": available_exercises
-        })
+            return render(request, "workout_log/workout.html", {
+                "exercises": available_exercises
+            })
+    
+    # Everyone else is prompted to sign in
+    else:
+        return HttpResponseRedirect(reverse("login"))
 
 @csrf_exempt
 def update(request, workout_id):
